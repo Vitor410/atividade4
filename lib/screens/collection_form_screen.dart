@@ -11,11 +11,22 @@ class CollectionFormScreen extends StatefulWidget {
 
 class _CollectionFormScreenState extends State<CollectionFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  String nome = '';
-  String descricao = '';
+  String nomeColecao = '';
+  String descricaoColecao = '';
   String tipoItem = 'HQ'; // Valor padrão
 
   final List<String> tipos = ['HQ', 'Selos', 'Moedas'];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final collection = ModalRoute.of(context)?.settings.arguments as Collection?;
+    if (collection != null) {
+      nomeColecao = collection.nome;
+      descricaoColecao = collection.descricao;
+      tipoItem = collection.tipoItem;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +36,23 @@ class _CollectionFormScreenState extends State<CollectionFormScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
+              Text(
+                "Dados da Coleção",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              SizedBox(height: 8),
               TextFormField(
+                initialValue: nomeColecao,
                 decoration: InputDecoration(labelText: 'Nome da coleção'),
                 validator: (v) => v == null || v.isEmpty ? 'Informe o nome' : null,
-                onSaved: (v) => nome = v!,
+                onSaved: (v) => nomeColecao = v!,
               ),
               TextFormField(
+                initialValue: descricaoColecao,
                 decoration: InputDecoration(labelText: 'Descrição'),
-                onSaved: (v) => descricao = v ?? '',
+                onSaved: (v) => descricaoColecao = v ?? '',
               ),
               DropdownButtonFormField<String>(
                 value: tipoItem,
@@ -57,11 +75,12 @@ class _CollectionFormScreenState extends State<CollectionFormScreen> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    widget.onSave(Collection(
-                      nome: nome,
-                      descricao: descricao,
+                    final collection = Collection(
+                      nome: nomeColecao,
+                      descricao: descricaoColecao,
                       tipoItem: tipoItem,
-                    ));
+                    );
+                    widget.onSave(collection);
                     Navigator.pop(context);
                   }
                 },

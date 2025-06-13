@@ -5,6 +5,8 @@ import 'collection_form_screen.dart';
 import 'collection_detail_screen.dart';
 
 class CollectionsHomeScreen extends StatefulWidget {
+  const CollectionsHomeScreen({super.key});
+
   @override
   State<CollectionsHomeScreen> createState() => _CollectionsHomeScreenState();
 }
@@ -37,10 +39,67 @@ class _CollectionsHomeScreenState extends State<CollectionsHomeScreen> {
                     child: ListTile(
                       contentPadding:
                           EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      title: Text(
-                        collection.nome,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              collection.nome,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.amber),
+                            tooltip: 'Editar coleção',
+                            onPressed: () async {
+                              final editedCollection = await Navigator.push<Collection>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CollectionFormScreen(
+                                    onSave: (edited) {
+                                      Navigator.pop(context, edited);
+                                    },
+                                  ),
+                                  settings: RouteSettings(arguments: collection),
+                                ),
+                              );
+                              if (editedCollection != null) {
+                                setState(() {
+                                  collections[idx] = editedCollection;
+                                });
+                              }
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            tooltip: 'Excluir coleção',
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: Text('Excluir coleção'),
+                                  content: Text('Tem certeza que deseja excluir esta coleção?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text('Cancelar'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          itemsByCollection.remove(collection.id ?? idx);
+                                          collections.removeAt(idx);
+                                        });
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text('Excluir', style: TextStyle(color: Colors.red)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                       subtitle: Text(
                         collection.descricao,
@@ -65,8 +124,8 @@ class _CollectionsHomeScreenState extends State<CollectionsHomeScreen> {
                                 });
                               },
                             ),
-                          );
-                        }
+                          ),
+                        );
                       },
                     ),
                   );
